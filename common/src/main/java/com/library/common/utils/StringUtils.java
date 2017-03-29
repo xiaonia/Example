@@ -3,6 +3,7 @@ package com.library.common.utils;
 import android.text.TextUtils;
 
 public class StringUtils {
+
     public static boolean equals(String a, String b) {
         return a == b || (a != null && a.equals(b));
     }
@@ -33,4 +34,5 @@ public class StringUtils {
     public static boolean hasPrefix(String s, String prefix) {
         return !isEmpty(s) && s.startsWith(prefix);
     }
+
 }

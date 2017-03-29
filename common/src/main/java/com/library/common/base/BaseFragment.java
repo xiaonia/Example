@@ -1,12 +1,11 @@
 package com.library.common.base;
 
 import com.library.common.utils.ResourcesUtils;
+import com.library.common.utils.UiUtils;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,10 +16,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-
-import static android.content.Context.INPUT_METHOD_SERVICE;
-import static android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS;
 
 public class BaseFragment extends Fragment implements ActivityContext, ApplicationContext, UiHandler.UiCallback {
 
@@ -218,52 +213,11 @@ public class BaseFragment extends Fragment implements ActivityContext, Applicati
     }
 
     /**
-     * To hide keypad
-     */
-    protected void hideKeypad() {
-        final View v = getActivity().getCurrentFocus();
-        if (v != null) {
-            final InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(v.getWindowToken(), HIDE_NOT_ALWAYS);
-        }
-    }
-
-    /**
-     * To hide keypad
-     */
-    protected void hideKeyBoard() {
-        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-
-            imm.hideSoftInputFromWindow(getActivity().getWindow().getDecorView().getWindowToken(),
-                    0);
-        }
-    }
-
-    /**
-     * show keyboard
-     */
-    protected void showKeyBoard(View view) {
-        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(view, InputMethodManager.SHOW_FORCED);
-        }
-    }
-
-    /**
-     * check if key board shown?
-     */
-    protected boolean isKeyBoardShown() {
-        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        return imm != null && imm.isActive();
-    }
-
-    /**
      *  show status bar holder
      */
     protected void showStatusBarHolder() {
         //show status bar place holder view
-        int statusBarHeight = getStatusBarHeight();
+        int statusBarHeight = UiUtils.getStatusBarHeight(getBaseActivity());
         if (statusBarHeight > 0 && getActivityContext() != null && getView() != null) {
             View statusBarHolder = getView().findViewById(
                     ResourcesUtils.getId(getActivityContext(), "status_bar_holder"));
@@ -272,28 +226,6 @@ public class BaseFragment extends Fragment implements ActivityContext, Applicati
                 statusBarHolder.getLayoutParams().height = statusBarHeight;
             }
         }
-    }
-
-    /**
-     *  get system bar height
-     */
-    protected int getStatusBarHeight() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && getActivityContext() != null) {
-            Rect rect = new Rect();
-            ((Activity) getActivityContext()).getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-            if (rect.top > 0) {
-                return rect.top;
-            }
-
-            int resourceId = getActivityContext().getResources()
-                    .getIdentifier("status_bar_height", "dimen", "android");
-            if (resourceId > 0) {
-                return getActivityContext().getResources()
-                        .getDimensionPixelSize(resourceId);
-            }
-        }
-
-        return 0;
     }
 
     public Bundle getExtraArguments() {

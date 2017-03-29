@@ -4,8 +4,6 @@ import android.content.Context;
 
 /**
  * 资源文件工具类
- *
- * @author lyy
  */
 public class ResourcesUtils {
     private static final String RES_ID = "id";
@@ -23,10 +21,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getId(Context context, String resName) {
         return getResId(context, resName, RES_ID);
@@ -34,10 +28,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件string的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getStringId(Context context, String resName) {
         return getResId(context, resName, RES_STRING);
@@ -45,10 +35,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件drable的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getDrawableId(Context context, String resName) {
         return getResId(context, resName, RES_DRAWABLE);
@@ -56,10 +42,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件mipmap的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getMipmapId(Context context, String resName) {
         return getResId(context, resName, RES_MIPMAP);
@@ -67,10 +49,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件layout的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getLayoutId(Context context, String resName) {
         return getResId(context, resName, RES_LAYOUT);
@@ -78,10 +56,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件style的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getStyleId(Context context, String resName) {
         return getResId(context, resName, RES_STYLE);
@@ -89,9 +63,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件styleable的id
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getStyleableId(Context context,String resName){
         return getResId(context,resName,RES_STYLEABLE);
@@ -100,9 +71,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件attr的id
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getAttrId(Context context,String resName){
         return getResId(context,resName,RES_ATTR);
@@ -110,10 +78,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件color的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getColorId(Context context, String resName) {
         return getResId(context, resName, RES_COLOR);
@@ -121,10 +85,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件dimen的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getDimenId(Context context, String resName) {
         return getResId(context, resName, RES_DIMEN);
@@ -132,10 +92,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件ainm的id
-     *
-     * @param context
-     * @param resName
-     * @return
      */
     public static int getAnimId(Context context, String resName) {
         return getResId(context, resName, RES_ANIM);
@@ -150,11 +106,6 @@ public class ResourcesUtils {
 
     /**
      * 获取资源文件ID
-     *
-     * @param context
-     * @param resName
-     * @param defType
-     * @return
      */
     public static int getResId(Context context, String resName, String defType) {
         return context.getResources().getIdentifier(resName, defType, context.getPackageName());

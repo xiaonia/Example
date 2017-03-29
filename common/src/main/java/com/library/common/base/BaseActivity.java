@@ -2,12 +2,11 @@ package com.library.common.base;
 
 import com.aibao.evaluation.common.R;
 import com.library.common.utils.ResourcesUtils;
+import com.library.common.utils.UiUtils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +20,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
+
+import static android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS;
 
 public abstract class BaseActivity extends AppCompatActivity implements ApplicationContext, ActivityContext, UiHandler.UiCallback {
     /**
@@ -255,7 +257,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Applicat
      */
     protected void showStatusBarHolder() {
         //show status bar place holder view
-        int statusBarHeight = getStatusBarHeight();
+        int statusBarHeight = UiUtils.getStatusBarHeight(this);
         if (statusBarHeight > 0 && getActivityContext() != null) {
             View statusBarHolder = findViewById(
                     ResourcesUtils.getId(getActivityContext(), "status_bar_holder"));
@@ -267,31 +269,9 @@ public abstract class BaseActivity extends AppCompatActivity implements Applicat
     }
 
     /**
-     * @return height of system status bar
-     */
-    protected int getStatusBarHeight() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && getActivityContext() != null) {
-            Rect rect = new Rect();
-            ((Activity) getActivityContext()).getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-            if (rect.top > 0) {
-                return rect.top;
-            }
-
-            int resourceId = getActivityContext().getResources()
-                    .getIdentifier("status_bar_height", "dimen", "android");
-            if (resourceId > 0) {
-                return getActivityContext().getResources()
-                        .getDimensionPixelSize(resourceId);
-            }
-        }
-
-        return 0;
-    }
-
-    /**
      *  check permission in runtime
      */
-    protected void checkPermissions(String permission, int requestCode, String warning) {
+    public void checkPermissions(String permission, int requestCode, String warning) {
         if (ContextCompat.checkSelfPermission(this, permission)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -304,6 +284,46 @@ public abstract class BaseActivity extends AppCompatActivity implements Applicat
                 requestPermissions(new String[]{permission}, requestCode);
             }
         }
+    }
+
+    /**
+     * To hide keypad
+     */
+    public void hideKeypad() {
+        final View v = getCurrentFocus();
+        if (v != null) {
+            final InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), HIDE_NOT_ALWAYS);
+        }
+    }
+
+    /**
+     * To hide keypad
+     */
+    public void hideKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+
+            imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+        }
+    }
+
+    /**
+     * show keyboard
+     */
+    public void showKeyBoard(View view) {
+        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(view, InputMethodManager.SHOW_FORCED);
+        }
+    }
+
+    /**
+     * check if key board shown?
+     */
+    public boolean isKeyBoardShown() {
+        InputMethodManager imm = (InputMethodManager) getActivityContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        return imm != null && imm.isActive();
     }
 
 }
