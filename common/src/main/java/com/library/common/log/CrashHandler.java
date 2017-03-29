@@ -4,7 +4,7 @@ import android.content.Context;
 
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
-    public static final String TAG = "CrashHandler";
+    public static final String TAG = CrashHandler.class.getSimpleName();
 
     private static final CrashHandler sInstance = new CrashHandler();
 
