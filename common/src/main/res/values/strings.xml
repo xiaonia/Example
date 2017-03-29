@@ -1,0 +1,5 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">CommonComponents</string>
+    <string name="network_unconnection">网络未连接！</string>
+    <string name="tips_text_length_limit">最多只能输入<xliff:g>%d</xliff:g>个字符</string>
+</resources>

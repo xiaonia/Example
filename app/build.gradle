@@ -1,0 +1,96 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        applicationId "com.fdu.xuqingqi.example"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+
+
+    signingConfigs {
+        release {
+            storeFile file("../extras/keystore/debug.keystore")
+            //storePassword ''
+            //keyAlias ''
+            //keyPassword ''
+        }
+
+        debug {
+            storeFile file("../extras/keystore/debug.keystore")
+            //storePassword ''
+            //keyAlias ''
+            //keyPassword ''
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        _test {}
+    }
+
+    //productFlavors.all { flavor ->
+    //    flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+    //}
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                def fileName;
+                if (variant.productFlavors[0].name.contains("_")) {
+                    fileName = "Example_${defaultConfig.versionName}_" + variant.productFlavors[0].name + "${buildTime()}" + ".apk"
+                } else {
+                    fileName = "Example_${defaultConfig.versionName}_" + variant.productFlavors[0].name + "${buildTime()}_" + ".apk"
+                }
+                output.outputFile = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    compile 'com.android.support:support-v4:' + rootProject.ext.supportVersion
+    compile 'com.android.support:appcompat-v7:' + rootProject.ext.supportVersion
+    compile 'com.android.support:design:' + rootProject.ext.supportVersion
+
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+
+    compile project(':common')
+}
+
+def buildTime() {
+    return new Date().format("yyMMdd", TimeZone.getTimeZone("UTC"))
+}
+
+
