@@ -31,14 +31,14 @@ public class DbController {
 
 
     private static DbController INSTANCE = null;
-    private Application mApplication;
+    //private Application mApplication;
     private final ExecutorService mThreadPool = Executors.newCachedThreadPool();
-    private DatabaseWrapper mDatabase = null;
+    private DbWrapper mDatabase = null;
     private Handler mMainThread;
 
     private DbController(Application application, SQLiteOpenHelper dbHelper) {
-        this.mApplication = application;
-        this.mDatabase = new DatabaseWrapper(application, dbHelper);
+        //this.mApplication = application;
+        this.mDatabase = new DbWrapper(application, dbHelper);
         this.mMainThread = new Handler(Looper.getMainLooper());
     }
 
@@ -46,185 +46,164 @@ public class DbController {
         return new DbController(application, dbHelper);
     }
 
-    public static DbController getInstance() {
+    public static DbController instance() {
         return INSTANCE;
     }
 
-    private ExecutorService getThreadPool() {
+    private ExecutorService threadPool() {
         return mThreadPool;
     }
 
-    private Handler getMainThread() {
+    private Handler mainThread() {
         return mMainThread;
     }
 
-    private DatabaseWrapper getDatabase() {
+    private DbWrapper database() {
         return mDatabase;
     }
 
     @SuppressWarnings("unused")
-    public void insert(final Object object, final DataListener dataListener){
-        getThreadPool().execute(new Runnable() {
+    public void insert(final Object object, final DbListener dbListener){
+        execute(dbListener, false, true, new DbWrapper.DbCallback<Void>() {
             @Override
-            public void run() {
-                getDatabase().execute(false, true, new DatabaseWrapper.DbCallback<Void>() {
-                    @Override
-                    public Void doDbWork(SQLiteDatabase db) {
-                        dispatchStart(dataListener);
-
-                        try {
-                            final long id = insertObject(db, object);
-                            if (id > -1) {
-                                dispatchSuccess(dataListener, id);
-                                return null;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        dispatchFailed(dataListener, "insert failed");
-                        return null;
-                    }
-                });
+            public Void doDbWork(SQLiteDatabase db) throws Exception {
+                dispatchStart(dbListener);
+                long id = insertObject(db, object);
+                if (id > -1) {
+                    dispatchSuccess(dbListener, id);
+                    return null;
+                }
+                dispatchFailed(dbListener, "insert failed");
+                return null;
             }
         });
     }
 
     @SuppressWarnings("unused")
-    public void insert(final String table, final Map<String, Object> valueMap, final DataListener dataListener){
-        getThreadPool().execute(new Runnable() {
+    public void insert(final String table, final Map<String, Object> valueMap, final DbListener dbListener){
+        execute(dbListener, false, true, new DbWrapper.DbCallback<Void>() {
             @Override
-            public void run() {
-                getDatabase().execute(false, true, new DatabaseWrapper.DbCallback<Void>() {
-                    @Override
-                    public Void doDbWork(SQLiteDatabase db) {
-                        dispatchStart(dataListener);
-
-                        ContentValues values = buildContentValues(valueMap);
-                        if (values != null) {
-                            final long id = db.insert(table, null, values);
-                            if (id > -1) {
-                                dispatchSuccess(dataListener, id);
-                                return null;
-                            }
-                        }
-
-                        dispatchFailed(dataListener, "insert failed");
+            public Void doDbWork(SQLiteDatabase db)  throws Exception {
+                dispatchStart(dbListener);
+                ContentValues values = buildContentValues(valueMap);
+                if (values != null) {
+                    final long id = db.insert(table, null, values);
+                    if (id > -1) {
+                        dispatchSuccess(dbListener, id);
                         return null;
                     }
-                });
+                }
+                dispatchFailed(dbListener, "insert failed");
+                return null;
             }
         });
     }
 
     @SuppressWarnings("unused")
-    public void delete(final String table, final Map<String, Object> valueMap, final DataListener dataListener){
-        getThreadPool().execute(new Runnable() {
+    public void delete(final String table, final Map<String, Object> valueMap, final DbListener dbListener){
+        execute(dbListener, false, true, new DbWrapper.DbCallback<Void>() {
             @Override
-            public void run() {
-                getDatabase().execute(false, true, new DatabaseWrapper.DbCallback<Void>() {
-                    @Override
-                    public Void doDbWork(SQLiteDatabase db) {
-                        dispatchStart(dataListener);
-
-                        Pair<String, String[]> pair = buildWhereClause(valueMap);
-                        if (pair != null) {
-                            final int count = db.delete(table, pair.first, pair.second);
-                            if (count > 0) {
-                                dispatchSuccess(dataListener, count);
-                                return null;
-                            }
-                        }
-
-                        dispatchFailed(dataListener, "delete failed");
+            public Void doDbWork(SQLiteDatabase db) throws Exception  {
+                dispatchStart(dbListener);
+                Pair<String, String[]> pair = buildWhereClause(valueMap);
+                if (pair != null) {
+                    final int count = db.delete(table, pair.first, pair.second);
+                    if (count > 0) {
+                        dispatchSuccess(dbListener, count);
                         return null;
                     }
-                });
+                }
+                dispatchFailed(dbListener, "delete failed");
+                return null;
             }
         });
     }
 
     @SuppressWarnings("unused")
-    public void query(final String table, final String[] columns, final String selection, final String[] selectionArgs, final String groupBy, final String having,
-            final String orderBy, final String limit, final DataListener dataListener, final Class classOfType){
+    public void query(final String table, final String[] columns, final String selection, final String[] selectionArgs, final String groupBy,
+            final String having, final String orderBy, final String limit, final DbListener dbListener, final Class classOfType){
 
-        getThreadPool().execute(new Runnable() {
+        execute(dbListener, false, true, new DbWrapper.DbCallback<Void>() {
             @Override
-            public void run() {
-                getDatabase().execute(false, true, new DatabaseWrapper.DbCallback<Void>() {
-                    @Override
-                    public Void doDbWork(SQLiteDatabase db) {
-                        dispatchStart(dataListener);
-
-                        Cursor cursor = null;
-                        try {
-                            final List<Object> result = new ArrayList<>();
-                            cursor = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
-                            if (cursor != null ) {
-                                while (cursor.moveToNext()){
-                                    try {
-                                        Object object = parseResultObject(classOfType, cursor);
-                                        result.add(object);
-                                    }catch (Exception ignore) {
-                                        ignore.printStackTrace();
-                                    }
-                                }
-
-                                if (result.size() > 0) {
-                                    dispatchSuccess(dataListener, result);
-                                    return null;
-                                }
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }finally {
-                            if (cursor != null) {
-                                cursor.close();
+            public Void doDbWork(SQLiteDatabase db) throws Exception {
+                dispatchStart(dbListener);
+                Cursor cursor = null;
+                try {
+                    cursor = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+                    if (cursor != null ) {
+                        List<Object> result = new ArrayList<>();
+                        while (cursor.moveToNext()){
+                            try {
+                                Object object = parseResultObject(classOfType, cursor);
+                                result.add(object);
+                            }catch (Exception ignore) {
+                                ignore.printStackTrace();
                             }
                         }
-
-                        dispatchFailed(dataListener, "query failed");
-                        return null;
+                        if (result.size() > 0) {
+                            dispatchSuccess(dbListener, result);
+                            return null;
+                        }
                     }
-                });
+                } catch (Exception e){
+                    throw e;
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+                dispatchFailed(dbListener, "query failed");
+                return null;
             }
         });
     }
 
-
-
-    private void dispatchStart(final DataListener dataListener) {
-        getMainThread().post(new Runnable() {
+    private void execute(final DbListener listener, final boolean isRead, final boolean transactional, final DbWrapper.DbCallback callback) {
+        threadPool().execute(new Runnable() {
             @Override
             public void run() {
-                if (dataListener == null) {
-                    return;
+                try {
+                    database().execute(isRead, transactional, callback);
+                } catch (Exception allEx) {
+                    allEx.printStackTrace();
+                    dispatchFailed(listener, allEx.getMessage());
                 }
-                dataListener.onOperationStart();
             }
         });
     }
 
-    private void dispatchSuccess(final DataListener dataListener, final Object object) {
-        getMainThread().post(new Runnable() {
+    private void dispatchStart(final DbListener dbListener) {
+        mainThread().post(new Runnable() {
             @Override
             public void run() {
-                if (dataListener == null) {
+                if (dbListener == null) {
                     return;
                 }
-                dataListener.onOperationSuccess(object);
+                dbListener.onDbOpStart();
             }
         });
     }
 
-    private void dispatchFailed(final DataListener dataListener, final String message) {
-        getMainThread().post(new Runnable() {
+    private void dispatchSuccess(final DbListener dbListener, final Object object) {
+        mainThread().post(new Runnable() {
             @Override
             public void run() {
-                if (dataListener == null) {
+                if (dbListener == null) {
                     return;
                 }
-                dataListener.onOperationFailed(message);
+                dbListener.onDbOpSuccess(object);
+            }
+        });
+    }
+
+    private void dispatchFailed(final DbListener dbListener, final String message) {
+        mainThread().post(new Runnable() {
+            @Override
+            public void run() {
+                if (dbListener == null) {
+                    return;
+                }
+                dbListener.onDbOpFailed(message);
             }
         });
     }
@@ -339,22 +318,22 @@ public class DbController {
     private long insertObject(SQLiteDatabase db, Object object) throws Exception {
         String table = "";
         Class cls = object.getClass();
-        Annotation annotation = cls.getAnnotation(DatabaseTable.class);
-        if (annotation instanceof DatabaseTable) {
-            DatabaseTable databaseTable = (DatabaseTable) annotation;
-            table = databaseTable.table();
+        Annotation annotation = cls.getAnnotation(DbTable.class);
+        if (annotation instanceof DbTable) {
+            DbTable dbTable = (DbTable) annotation;
+            table = dbTable.table();
         } else {
-            throw new Exception("can not find table name for " + cls.getSimpleName());
+            throw new Exception("can not find table name for class " + cls.getSimpleName());
         }
 
         ContentValues values = new ContentValues();
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            Annotation columnAnnotation = field.getAnnotation(DatabaseColumn.class);
+            Annotation columnAnnotation = field.getAnnotation(DbColumn.class);
             if (columnAnnotation != null) {
-                DatabaseColumn databaseColumn = (DatabaseColumn) columnAnnotation;
-                String column = databaseColumn.column();
-                boolean nullable = databaseColumn.nullable();
+                DbColumn dbColumn = (DbColumn) columnAnnotation;
+                String column = dbColumn.column();
+                boolean nullable = dbColumn.nullable();
                 field.setAccessible(true);
                 Class type = field.getType();
                 Object value = field.get(object);
@@ -414,13 +393,12 @@ public class DbController {
         Object instance = cls.newInstance();
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            Annotation columnAnnotation = field.getAnnotation(DatabaseColumn.class);
+            Annotation columnAnnotation = field.getAnnotation(DbColumn.class);
             if (columnAnnotation != null) {
-                DatabaseColumn databaseColumn = (DatabaseColumn) columnAnnotation;
-                String column = databaseColumn.column();
-                int version = databaseColumn.version();
+                DbColumn dbColumn = (DbColumn) columnAnnotation;
+                String column = dbColumn.column();
+                int version = dbColumn.version();
                 field.setAccessible(true);
-
                 int columnIndex = cursor.getColumnIndex(column);
                 if (cursor.isNull(columnIndex)) {
                     continue;

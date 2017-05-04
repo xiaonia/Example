@@ -2,7 +2,7 @@ package com.fdu.xuqingqi.example.activity;
 
 import com.fdu.xuqingqi.example.R;
 import com.fdu.xuqingqi.example.domain.User;
-import com.library.common.database.DataListener;
+import com.library.common.database.DbListener;
 import com.library.common.database.DbController;
 
 import android.os.Bundle;
@@ -111,40 +111,40 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void testDb() {
-        final DbController dbController = DbController.getInstance();
+        final DbController dbController = DbController.instance();
         User user = new User();
         user.id = 666;
         user.user_name = "isco";
-        dbController.insert(user, new DataListener() {
+        dbController.insert(user, new DbListener() {
             @Override
-            public void onOperationStart() {
+            public void onDbOpStart() {
 
             }
 
             @Override
-            public void onOperationSuccess(Object extra) {
-                dbController.query("users", null, null, null, null, null, null, null, new DataListener() {
+            public void onDbOpSuccess(Object extra) {
+                dbController.query("users", null, null, null, null, null, null, null, new DbListener() {
                     @Override
-                    public void onOperationStart() {
+                    public void onDbOpStart() {
 
                     }
 
                     @Override
-                    public void onOperationSuccess(Object extra) {
+                    public void onDbOpSuccess(Object extra) {
                         if (extra != null) {
 
                         }
                     }
 
                     @Override
-                    public void onOperationFailed(String message) {
+                    public void onDbOpFailed(String message) {
 
                     }
                 }, User.class);
             }
 
             @Override
-            public void onOperationFailed(String message) {
+            public void onDbOpFailed(String message) {
 
             }
         });

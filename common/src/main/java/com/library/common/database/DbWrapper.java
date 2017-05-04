@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class DatabaseWrapper {
+public class DbWrapper {
 
     private final Lock mReadLock;
     private final Lock mWriteLock;
@@ -26,15 +26,15 @@ public class DatabaseWrapper {
 
     public static interface DbCallback<T>{
 
-        T doDbWork(SQLiteDatabase db);
+        T doDbWork(SQLiteDatabase db) throws Exception;
     }
 
-    public DatabaseWrapper(Application application, SQLiteOpenHelper dbHelper){
+    public DbWrapper(Application application, SQLiteOpenHelper dbHelper){
         this.mApp = application;
         this.mDbHelper = dbHelper;
     }
 
-    public <T> T execute(final boolean isRead, final boolean transactional, final DbCallback<T> callback){
+    public <T> T execute(final boolean isRead, final boolean transactional, final DbCallback<T> callback) throws Exception {
         if (isRead) {
             mReadLock.lock();
         } else {
@@ -61,7 +61,7 @@ public class DatabaseWrapper {
             }
             return result;
         } catch (Exception e){
-            e.printStackTrace();
+            throw e;
         } finally {
             if (doTransaction) {
                 mDb.endTransaction();
@@ -76,7 +76,6 @@ public class DatabaseWrapper {
                 mWriteLock.unlock();
             }
         }
-        return null;
     }
 
 }

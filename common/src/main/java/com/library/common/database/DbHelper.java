@@ -54,10 +54,10 @@ public class DbHelper extends SQLiteOpenHelper {
         StringBuilder sb = new StringBuilder("");
         sb.append("CREATE TABLE");
         sb.append(" ");
-        Annotation annotation = cls.getAnnotation(DatabaseTable.class);
-        if (annotation instanceof DatabaseTable) {
-            DatabaseTable databaseTable = (DatabaseTable) annotation;
-            sb.append(databaseTable.table());
+        Annotation annotation = cls.getAnnotation(DbTable.class);
+        if (annotation instanceof DbTable) {
+            DbTable dbTable = (DbTable) annotation;
+            sb.append(dbTable.table());
             sb.append(" ");
         } else {
             throw new Exception("can not find table name for " + cls.getSimpleName());
@@ -67,14 +67,14 @@ public class DbHelper extends SQLiteOpenHelper {
         boolean firstColumn = true;
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            Annotation columnAnnotation = field.getAnnotation(DatabaseColumn.class);
+            Annotation columnAnnotation = field.getAnnotation(DbColumn.class);
             if (columnAnnotation != null) {
-                DatabaseColumn databaseColumn = (DatabaseColumn) columnAnnotation;
-                String column = databaseColumn.column();
-                int version = databaseColumn.version();
-                boolean deprecated = databaseColumn.deprecated();
-                boolean primary = databaseColumn.primary();
-                boolean nullable = databaseColumn.nullable();
+                DbColumn dbColumn = (DbColumn) columnAnnotation;
+                String column = dbColumn.column();
+                int version = dbColumn.version();
+                boolean deprecated = dbColumn.deprecated();
+                boolean primary = dbColumn.primary();
+                boolean nullable = dbColumn.nullable();
                 if (deprecated) {
                     continue;
                 }
@@ -111,24 +111,24 @@ public class DbHelper extends SQLiteOpenHelper {
     @SuppressWarnings("unchecked, unused")
     protected void upgradeTable(SQLiteDatabase db, int oldVersion, int newVersion, Class cls) throws Exception {
         String table = "";
-        Annotation annotation = cls.getAnnotation(DatabaseTable.class);
-        if (annotation instanceof DatabaseTable) {
-            DatabaseTable databaseTable = (DatabaseTable) annotation;
-            table = databaseTable.table();
+        Annotation annotation = cls.getAnnotation(DbTable.class);
+        if (annotation instanceof DbTable) {
+            DbTable dbTable = (DbTable) annotation;
+            table = dbTable.table();
         } else {
             throw new Exception("can not find table name for " + cls.getSimpleName());
         }
 
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            Annotation columnAnnotation = field.getAnnotation(DatabaseColumn.class);
+            Annotation columnAnnotation = field.getAnnotation(DbColumn.class);
             if (columnAnnotation != null) {
-                DatabaseColumn databaseColumn = (DatabaseColumn) columnAnnotation;
-                String column = databaseColumn.column();
-                int version = databaseColumn.version();
-                boolean deprecated = databaseColumn.deprecated();
-                boolean primary = databaseColumn.primary();
-                boolean nullable = databaseColumn.nullable();
+                DbColumn dbColumn = (DbColumn) columnAnnotation;
+                String column = dbColumn.column();
+                int version = dbColumn.version();
+                boolean deprecated = dbColumn.deprecated();
+                boolean primary = dbColumn.primary();
+                boolean nullable = dbColumn.nullable();
                 if (version != newVersion || deprecated) {
                     continue;
                 }

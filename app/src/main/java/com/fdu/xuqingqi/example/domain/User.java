@@ -1,7 +1,7 @@
 package com.fdu.xuqingqi.example.domain;
 
-import com.library.common.database.DatabaseColumn;
-import com.library.common.database.DatabaseTable;
+import com.library.common.database.DbColumn;
+import com.library.common.database.DbTable;
 
 /**
  * Description:
@@ -10,16 +10,16 @@ import com.library.common.database.DatabaseTable;
  * Date: 2017/5/4
  */
 
-@DatabaseTable(table = "users")
+@DbTable(table = "users")
 public class User {
 
-    @DatabaseColumn(version = 1, column = "uid")
+    @DbColumn(version = 1, column = "uid")
     public int id;
 
-    @DatabaseColumn(version = 1, column = "user_name")
+    @DbColumn(version = 1, column = "user_name")
     public String user_name;
 
-    @DatabaseColumn(version = 1, column = "nick_name")
+    @DbColumn(version = 1, column = "nick_name")
     public String nick_name;
 
 }

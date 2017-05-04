@@ -12,17 +12,9 @@ import java.lang.annotation.Target;
  * Date: 2017/4/15
  */
 
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DatabaseColumn {
+public @interface DbTable {
 
-    int version() default 0;
-
-    String column();
-
-    boolean primary() default false;
-
-    boolean nullable() default true;
-
-    boolean deprecated() default false;
+    String table();
 }
