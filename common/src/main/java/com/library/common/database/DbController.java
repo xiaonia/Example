@@ -27,25 +27,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @SuppressWarnings("unused")
-public class DataController {
+public class DbController {
 
 
-    private static DataController INSTANCE = null;
+    private static DbController INSTANCE = null;
     private Application mApplication;
     private final ExecutorService mThreadPool = Executors.newCachedThreadPool();
     private DatabaseWrapper mDatabase = null;
     private Handler mMainThread;
 
-    private DataController(Application application, SQLiteOpenHelper dbHelper) {
+    private DbController(Application application, SQLiteOpenHelper dbHelper) {
         this.mApplication = application;
         this.mDatabase = new DatabaseWrapper(application, dbHelper);
         this.mMainThread = new Handler(Looper.getMainLooper());
     }
 
-    public synchronized static DataController getInstance(Application application) {
-        if (INSTANCE == null) {
-            INSTANCE = new DataController(application, new DbHelper(application));
-        }
+    public static DbController init(Application application, SQLiteOpenHelper dbHelper) {
+        return new DbController(application, dbHelper);
+    }
+
+    public static DbController getInstance() {
         return INSTANCE;
     }
 

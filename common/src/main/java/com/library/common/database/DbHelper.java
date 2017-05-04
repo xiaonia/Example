@@ -23,12 +23,12 @@ import java.lang.reflect.Field;
 
 public class DbHelper extends SQLiteOpenHelper {
 
-    // Any changes to the database format *must* include update-in-place code.
-    private static final int DATABASE_VERSION = 3;
-    private static final String DATABASE_NAME = "data.db";
+    private static final String TAG = DbHelper.class.getSimpleName();
 
-    public DbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    // Any changes to the database format *must* include update-in-place code.
+
+    public DbHelper(Context context, String dbName, int dbVersion) {
+        super(context, dbName, null, dbVersion);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     @SuppressWarnings("unchecked, unused")
-    private void createTable(SQLiteDatabase db, Class cls) throws Exception {
-        StringBuffer sb = new StringBuffer("");
+    protected void createTable(SQLiteDatabase db, Class cls) throws Exception {
+        StringBuilder sb = new StringBuilder("");
         sb.append("CREATE TABLE");
         sb.append(" ");
         Annotation annotation = cls.getAnnotation(DatabaseTable.class);
@@ -89,12 +89,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 Class type = field.getType();
                 String sqlType = getSQLiteType(type);
-                if (sqlType == null) {
-                    throw new Exception("can not find SQLite Type for " + type.getSimpleName());
-                } else {
-                    sb.append(" ");
-                    sb.append(sqlType);
-                }
+                sb.append(" ");
+                sb.append(sqlType);
 
                 if (!nullable) {
                     sb.append(" ");
@@ -113,7 +109,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     @SuppressWarnings("unchecked, unused")
-    private void upgradeTable(SQLiteDatabase db, int oldVersion, int newVersion, Class cls) throws Exception {
+    protected void upgradeTable(SQLiteDatabase db, int oldVersion, int newVersion, Class cls) throws Exception {
         String table = "";
         Annotation annotation = cls.getAnnotation(DatabaseTable.class);
         if (annotation instanceof DatabaseTable) {
@@ -148,12 +144,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
                 Class type = field.getType();
                 String sqlType = getSQLiteType(type);
-                if (sqlType == null) {
-                    throw new Exception("can not find SQLite Type for " + type.getSimpleName());
-                } else {
-                    sb.append(" ");
-                    sb.append(sqlType);
-                }
+                sb.append(" ");
+                sb.append(sqlType);
 
                 if (!nullable) {
                     sb.append(" ");
@@ -169,7 +161,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     db.execSQL(sb.toString());
                 } catch (SQLiteException e) {
                     if (!e.getMessage().startsWith("duplicate column name:")) {
-                        Log.e(DATABASE_NAME, "Unable to add " + column + " column to " + table);
+                        Log.e(TAG, "Unable to add " + column + " column to " + table);
                     }
                 }
             }
@@ -177,7 +169,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     @SuppressWarnings("unchecked")
-    private String getSQLiteType(Class type) {
+    protected String getSQLiteType(Class type) {
         String sqlType;
         if (type.isAssignableFrom(String.class)) {
             sqlType = "TEXT";
