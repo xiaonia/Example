@@ -10,11 +10,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
- * Description:
- * Author: xuqingqi
- * E-mail: xuqingqi01@gmail.com
- * Date: 2017/4/15
- *
  * TEXT : String
  * INTEGER : Long Short Integer Byte Boolean
  * REAL : Double Float

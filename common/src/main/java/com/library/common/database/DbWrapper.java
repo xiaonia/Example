@@ -18,7 +18,7 @@ public class DbWrapper {
         mWriteLock = lock.writeLock();
     }
 
-    private Application mApp;
+    //private Application mApplication;
     private SQLiteOpenHelper mDbHelper;
 
     private SQLiteDatabase mDb;
@@ -30,7 +30,7 @@ public class DbWrapper {
     }
 
     public DbWrapper(Application application, SQLiteOpenHelper dbHelper){
-        this.mApp = application;
+        //this.mApplication = application;
         this.mDbHelper = dbHelper;
     }
 
@@ -41,14 +41,16 @@ public class DbWrapper {
             mWriteLock.lock();
         }
         final boolean doTransaction = transactional && inTransaction.get() == null;
-        try{
+
+        try
+        {
             if (isRead) {
                 mDb = mDbHelper.getReadableDatabase();
             } else {
                 mDb = mDbHelper.getWritableDatabase();
             }
             if (mDb == null) {
-                throw new Exception("open or create database failed");
+                throw new IllegalStateException("open or create database failed");
             }
 
             if (doTransaction) {
@@ -60,14 +62,16 @@ public class DbWrapper {
                 mDb.setTransactionSuccessful();
             }
             return result;
-        } catch (Exception e){
-            throw e;
-        } finally {
+        }
+        finally
+        {
             if (doTransaction) {
-                mDb.endTransaction();
+                if (mDb != null) {
+                    mDb.endTransaction();
+                }
                 inTransaction.set(null);
             }
-            if (mDb.isOpen()) {
+            if (mDb != null && mDb.isOpen()) {
                 mDb.close();
             }
             if (isRead) {

@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SuppressWarnings("unused")
 public class DbController {
 
 
@@ -123,7 +122,7 @@ public class DbController {
     public void query(final String table, final String[] columns, final String selection, final String[] selectionArgs, final String groupBy,
             final String having, final String orderBy, final String limit, final DbListener dbListener, final Class classOfType){
 
-        execute(dbListener, false, true, new DbWrapper.DbCallback<Void>() {
+        execute(dbListener, true, true, new DbWrapper.DbCallback<Void>() {
             @Override
             public Void doDbWork(SQLiteDatabase db) throws Exception {
                 dispatchStart(dbListener);
@@ -145,8 +144,6 @@ public class DbController {
                             return null;
                         }
                     }
-                } catch (Exception e){
-                    throw e;
                 } finally {
                     if (cursor != null) {
                         cursor.close();
@@ -259,7 +256,7 @@ public class DbController {
         return new Pair<>(sb.toString(), args);
     }
 
-    private static ContentValues buildContentValues(Map<String, Object> valueMap) {
+    private ContentValues buildContentValues(Map<String, Object> valueMap) {
         if (valueMap != null) {
             ContentValues values = new ContentValues();
             for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
@@ -284,29 +281,7 @@ public class DbController {
                 } else if (value instanceof Short) {
                     values.put(key, (Short) value);
                 } else {
-                    try {
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        ObjectOutput out = null;
-                        try {
-                            out = new ObjectOutputStream(bos);
-                            out.writeObject(value);
-                            out.flush();
-                            values.put(key, bos.toByteArray());
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        } finally {
-                            try {
-                                bos.close();
-                                if (out != null) {
-                                    out.close();
-                                }
-                            } catch (IOException ex) {
-                                // ignore close exception
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    values.put(key, writeObject(value));
                 }
             }
             return values;
@@ -323,7 +298,7 @@ public class DbController {
             DbTable dbTable = (DbTable) annotation;
             table = dbTable.table();
         } else {
-            throw new Exception("can not find table name for class " + cls.getSimpleName());
+            throw new IllegalArgumentException("can not find table name for class " + cls.getSimpleName());
         }
 
         ContentValues values = new ContentValues();
@@ -357,29 +332,7 @@ public class DbController {
                 }  else if (value instanceof Byte) {
                     values.put(column, (Byte) value);
                 } else {
-                    try {
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        ObjectOutput out = null;
-                        try {
-                            out = new ObjectOutputStream(bos);
-                            out.writeObject(value);
-                            out.flush();
-                            values.put(column, bos.toByteArray());
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        } finally {
-                            try {
-                                bos.close();
-                                if (out != null) {
-                                    out.close();
-                                }
-                            } catch (IOException ex) {
-                                // ignore close exception
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    values.put(column, writeObject(value));
                 }
             }
         }
@@ -430,39 +383,59 @@ public class DbController {
                         || type.isAssignableFrom(byte.class)) {
                     value = cursor.getInt(columnIndex);
                 } else {
-                    try {
-                        ByteArrayInputStream bis = new ByteArrayInputStream(cursor.getBlob(columnIndex));
-                        ObjectInput in = null;
-                        try {
-                            in = new ObjectInputStream(bis);
-                            value = in.readObject();
-                        } catch (IOException ioe) {
-                          ioe.printStackTrace();
-                        } finally {
-                            try {
-                                if (in != null) {
-                                    in.close();
-                                }
-                            } catch (IOException ex) {
-                                // ignore close exception
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    value = readObject(cursor.getBlob(columnIndex));
                 }
 
                 if (value != null) {
-                    try {
-                        field.set(instance, value);
-                    } catch (IllegalArgumentException iae) {
-                        iae.printStackTrace();
-                    }
+                    field.set(instance, value);
                 }
             }
         }
 
         return instance;
+    }
+
+    private byte[] writeObject(Object object) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(object);
+            out.flush();
+            return bos.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bos.close();
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+        return null;
+    }
+
+    private Object readObject(byte[] bytes) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            return in.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+        return null;
     }
 
 }
