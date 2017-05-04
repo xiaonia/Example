@@ -62,7 +62,7 @@ public class DataController {
     }
 
     @SuppressWarnings("unused")
-    public void insert(final Class cls, final Object object, final DataListener dataListener){
+    public void insert(final Object object, final DataListener dataListener){
         getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
@@ -72,7 +72,7 @@ public class DataController {
                         dispatchStart(dataListener);
 
                         try {
-                            final long id = insertObject(db, cls, object);
+                            final long id = insertObject(db, object);
                             if (id > -1) {
                                 dispatchSuccess(dataListener, id);
                                 return null;
@@ -228,7 +228,7 @@ public class DataController {
         });
     }
 
-    public static Pair<String, String[]> buildWhereClause(Map<String, Object> paramMap) {
+    private static Pair<String, String[]> buildWhereClause(Map<String, Object> paramMap) {
         if (paramMap == null || paramMap.size() == 0) {
             return null;
         }
@@ -279,7 +279,7 @@ public class DataController {
         return new Pair<>(sb.toString(), args);
     }
 
-    public static ContentValues buildContentValues(Map<String, Object> valueMap) {
+    private static ContentValues buildContentValues(Map<String, Object> valueMap) {
         if (valueMap != null) {
             ContentValues values = new ContentValues();
             for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
@@ -334,8 +334,10 @@ public class DataController {
         return null;
     }
 
-    private long insertObject(SQLiteDatabase db, Class cls, Object object) throws Exception {
+    /** insert an object to database */
+    private long insertObject(SQLiteDatabase db, Object object) throws Exception {
         String table = "";
+        Class cls = object.getClass();
         Annotation annotation = cls.getAnnotation(DatabaseTable.class);
         if (annotation instanceof DatabaseTable) {
             DatabaseTable databaseTable = (DatabaseTable) annotation;
@@ -405,7 +407,7 @@ public class DataController {
         return db.insert(table, null, values);
     }
 
-    /** 将查询结果解析成对象 */
+    /** parse result of query to object list */
     @SuppressWarnings("unchecked")
     private Object parseResultObject(Class cls, Cursor cursor) throws IllegalAccessException, InstantiationException {
         Object instance = cls.newInstance();
@@ -472,7 +474,11 @@ public class DataController {
                 }
 
                 if (value != null) {
-                    field.set(instance, value);
+                    try {
+                        field.set(instance, value);
+                    } catch (IllegalArgumentException iae) {
+                        iae.printStackTrace();
+                    }
                 }
             }
         }
